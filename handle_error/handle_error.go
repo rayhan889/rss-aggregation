@@ -4,10 +4,10 @@ import (
 	"errors"
 	"net/http"
 
-	"github.com/rayhan889/rss-aggr/json"
+	"github.com/rayhan889/rss-aggr/handle_json"
 )
 
 func HandleError(w http.ResponseWriter, r *http.Request) {
 	err := errors.New("Something went wrong")
-	json.RespondWithError(w, http.StatusBadRequest, err)
+	handle_json.RespondWithError(w, http.StatusBadRequest, err)
 }
