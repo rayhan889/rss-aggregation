@@ -14,6 +14,7 @@ type User struct {
 	Password  string	`json:"password"`
 	CreatedAt time.Time	`json:"created_at"`
 	UpdatedAt time.Time	`json:"updated_at"`
+	ApiKey    string	`json:"api_key"`
 }
 
 func HandleUserToUserCustomModel(dbUser database.User) User {
@@ -24,5 +25,6 @@ func HandleUserToUserCustomModel(dbUser database.User) User {
 		Password: dbUser.Password,
 		CreatedAt: dbUser.CreatedAt,
 		UpdatedAt: dbUser.UpdatedAt,
+		ApiKey: dbUser.ApiKey,
 	}
 }
