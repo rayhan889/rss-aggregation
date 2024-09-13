@@ -9,6 +9,7 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/cors"
 	"github.com/joho/godotenv"
+	"github.com/rayhan889/rss-aggr/feeds"
 	"github.com/rayhan889/rss-aggr/handle_error"
 	"github.com/rayhan889/rss-aggr/internal/database"
 	"github.com/rayhan889/rss-aggr/readiness"
@@ -16,6 +17,10 @@ import (
 
 	_ "github.com/lib/pq"
 )
+
+type ApiConfig struct {
+	DB *database.Queries
+}
 
 func main() {
 	err := godotenv.Load(".env")
@@ -41,9 +46,12 @@ func main() {
 		log.Fatal("Can't connect to database: ", err)
 	}
 
-	apiCfg := &users.ApiConfig{
+	apiConfig := &ApiConfig{
 		DB: database.New(conn),
 	}
+
+	userConfig := &users.ApiConfig{DB: apiConfig.DB}
+	feedConfig := &feeds.ApiConfig{DB: apiConfig.DB}
 
 	router := chi.NewRouter()
 
@@ -59,8 +67,13 @@ func main() {
 	v1Router := chi.NewRouter()
 	v1Router.Get("/healthz", readiness.HandleReadiness)
 	v1Router.Get("/err", handle_error.HandleError)
-	v1Router.Post("/users", apiCfg.HandleCreateNewUser)
-	v1Router.Get("/users", apiCfg.HandleGetUserByAPIKey)
+
+	v1Router.Post("/users", userConfig.HandleCreateNewUser)
+	v1Router.Get("/users", apiConfig.authMiddleware(userConfig.HandleGetUserByAPIKey))
+
+	v1Router.Get("/feeds", feedConfig.HandleGetFeeds)
+	v1Router.Post("/feeds", apiConfig.authMiddleware(feedConfig.HandleCreateNewFeed))
+	v1Router.Get("/feeds/user/{userID}", apiConfig.authMiddleware(feedConfig.HandleGetFeedsByUserID))
 
 	router.Mount("/v1", v1Router)
 

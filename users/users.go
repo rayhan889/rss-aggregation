@@ -5,7 +5,6 @@ import (
 	"net/http"
 
 	"github.com/google/uuid"
-	"github.com/rayhan889/rss-aggr/auth"
 	"github.com/rayhan889/rss-aggr/handle_json"
 	"github.com/rayhan889/rss-aggr/internal/database"
 	"github.com/rayhan889/rss-aggr/models/user"
@@ -46,18 +45,6 @@ func (apf *ApiConfig) HandleCreateNewUser(w http.ResponseWriter, r *http.Request
 
 }
 
-func (apf *ApiConfig) HandleGetUserByAPIKey(w http.ResponseWriter, r *http.Request) {
-	apiKey, err := auth.GetAPIKey(r.Header)
-	if err != nil {
-		handle_json.RespondWithError(w, 403, err)
-		return
-	}
-
-	userDt, err := apf.DB.GetUserByAPIKey(r.Context(), apiKey)
-	if err != nil {
-		handle_json.RespondWithError(w, 404, err)
-		return
-	}
-
+func (apf *ApiConfig) HandleGetUserByAPIKey(w http.ResponseWriter, r *http.Request, userDt database.User) {
 	handle_json.RespondWithJSON(w, 200, user.HandleUserToUserCustomModel(userDt))
 }
